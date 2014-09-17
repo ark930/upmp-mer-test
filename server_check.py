@@ -33,6 +33,9 @@ class ServerCheck:
 
     def get_untest_merchant_json(self, root_path):
         paths = self.search_test_dir(root_path)
+        print(paths)
+        if paths is None:
+            return None
 
         data = dict()
         merchants = list()
@@ -78,9 +81,7 @@ class ServerCheck:
 
         # 获取测试目录
         for (dirpath, dirnames, filenames) in os.walk(path):
-            break
-
-        return [os.path.join(dirpath, dirname) for dirname in dirnames]
+            return [os.path.join(dirpath, dirname) for dirname in dirnames]
 
     def get_merchant_info_from_log(self, mer_id):
         with open('untest_merchant.txt') as f:
@@ -96,9 +97,10 @@ class ServerCheck:
 
 
 if __name__ == "__main__":
-    root_path = "/Users/edwin/dev/test/notebook"
+    root_path = "./data"
     sc = ServerCheck()
     data = sc.get_untest_merchant_json(root_path)
 
     import json
+
     print(json.dumps(data))
