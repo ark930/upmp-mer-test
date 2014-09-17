@@ -14,7 +14,7 @@ from server_check import ServerCheck
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
-    root_path = "/Users/edwin/dev/test/notebook"
+    root_path = "./data"
 
     def do_POST(self):
 
