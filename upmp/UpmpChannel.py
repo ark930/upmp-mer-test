@@ -23,8 +23,8 @@ class UpmpChannel(BaseChannel):
         req_dict['charset'] = UpmpConfig.CHARSET
         req_dict['transType'] = UpmpConfig.TRANS_TYPE_TRADE
         req_dict['merId'] = self.mer_id
-        req_dict['orderCurrency'] = 156
-        req_dict['backEndUrl'] = 'www.baidu.com/api/v1/notify'
+        req_dict['orderCurrency'] = UpmpConfig.CURRENCY_TYPE
+        req_dict['backEndUrl'] = UpmpConfig.NOTIFY_URL
         req_dict['orderTime'] = time.strftime("%Y%m%d%H%M%S", time.localtime(int(time.time())))
         # receive_req['orderTimeout'] = int(receive_req['orderTime']) + 10000
         req_dict['orderNumber'] = self.random_id(12)
@@ -41,21 +41,17 @@ class UpmpChannel(BaseChannel):
         print('request --', post_data)
 
         if amount == 123:
-            # logging.basicConfig(filename=os.path.join(os.getcwd(), 'sale.txt'), level=logging.NOTSET)
-            # logging.info(post_data)
-            Logger.config(os.getcwd(), 'sale.txt')
-            Logger.logging(post_data)
+            Logger.logging(os.getcwd(), 'sale.txt', post_data)
 
         res_dict = list()
         try:
             res = urllib2.urlopen(UpmpConfig.TRADE_URL, post_data)
             res_str = res.read().decode('UTF-8')
-            # res_str = 'respCode=11&signMethod=MD5&transType=01&orderNumber=bBycdNcqQlGT&charset=UTF-8&merId=880000000002457&respMsg=%E8%AE%A2%E5%8D%95%E6%9C%AA%E6%94%AF%E4%BB%98%5B8600001%5D&signature=44dda834855fdcb70c1cf513923a33d8&version=1.0.0'
+
             print('response --', res_str)
 
             if amount == 123:
-                # logging.info(res_str)
-                Logger.logging(res_str)
+                Logger.logging(os.getcwd(), 'sale.txt', post_data)
 
             res_dict = urlparse.parse_qs(res_str)
             res_dict = {key: res_dict[key][0] for key in res_dict}
@@ -75,8 +71,6 @@ class UpmpChannel(BaseChannel):
             print(e.code)
         except urllib2.URLError, e:
             print(e.args)
-
-        # if res.status == 200:
 
         return req_dict, res_dict['tn']
 
@@ -160,8 +154,8 @@ class UpmpChannel(BaseChannel):
         req_dict['charset'] = UpmpConfig.CHARSET
         req_dict['transType'] = trans_type
         req_dict['merId'] = self.mer_id
-        req_dict['orderCurrency'] = 156
-        req_dict['backEndUrl'] = 'www.baidu.com'
+        req_dict['orderCurrency'] = UpmpConfig.CURRENCY_TYPE
+        req_dict['backEndUrl'] = UpmpConfig.NOTIFY_URL
         req_dict['orderTime'] = order_time
         req_dict['orderNumber'] = self.random_id(12)
         req_dict['orderDescription'] = '两个小朋友'
@@ -254,6 +248,7 @@ if __name__ == '__main__':
     secret_key = 'NAMAChvG1H43B00Aui8u7EOcX18MBbke'
 
     uc = UpmpChannel(mer_id, secret_key)
+    uc.charge(123)
     notify_dict = uc.notify(
         'orderTime=20140917101934&settleDate=0916&orderNumber=afd4cbd40dc0&exchangeRate=0&signature=fd4901b1d99870604b4cc2ffc95eb7ab&settleCurrency=156&signMethod=MD5&transType=01&respCode=00&charset=UTF-8&sysReserved=%7BtraceTime%3D0917101934%26acqCode%3D00215800%26traceNumber%3D072753%7D&version=1.0.0&settleAmount=123&transStatus=00&merId=880000000002457&qn=201409171019340727537')
 
