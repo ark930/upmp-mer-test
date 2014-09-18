@@ -185,8 +185,8 @@ if __name__ == '__main__':
     uc = UpmpChannel(mer_id, secret_key)
     uc.charge(123)
     notify_dict = uc.notify(
-        'orderTime=20140917101934&settleDate=0916&orderNumber=afd4cbd40dc0&exchangeRate=0&signature=fd4901b1d99870604b4cc2ffc95eb7ab&settleCurrency=156&signMethod=MD5&transType=01&respCode=00&charset=UTF-8&sysReserved=%7BtraceTime%3D0917101934%26acqCode%3D00215800%26traceNumber%3D072753%7D&version=1.0.0&settleAmount=123&transStatus=00&merId=880000000002457&qn=201409171019340727537')
-
+        'orderTime=20140918172157&settleDate=0918&orderNumber=VxGwEmM0lgC6&exchangeRate=0&signature=410a5e8d36dc7f6ce40a0f9a529f07ab&settleCurrency=156&signMethod=MD5&transType=01&respCode=00&charset=UTF-8&sysReserved=%7BtraceTime%3D0918172157%26acqCode%3D00215800%26traceNumber%3D090672%7D&version=1.0.0&settleAmount=123&transStatus=00&merId=880000000002457&qn=201409181721570906727'
+    )
     if notify_dict:
         order_no = notify_dict['orderNumber']
         order_time = notify_dict['orderTime']

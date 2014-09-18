@@ -16,7 +16,7 @@ from logger.logger import Logger
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
-    root_path = "./data"
+    root_path = "./data/upmp-merchant-files"
 
     def do_POST(self):
 
@@ -41,10 +41,14 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         post_data, res_data, req_dict, res_dict = ret
 
                         res = dict()
-                        res['credential'] = dict()
-                        res['credential']['upmp'] = dict()
-                        res['credential']['upmp']['tn'] = res_dict['tn']
-                        res['credential']['upmp']['mode'] = '01'
+                        res['upmp'] = dict()
+                        res['upmp']['tn'] = res_dict['tn']
+                        res['upmp']['mode'] = '01'
+
+                        # res['credential'] = dict()
+                        # res['credential']['upmp'] = dict()
+                        # res['credential']['upmp']['tn'] = res_dict['tn']
+                        # res['credential']['upmp']['mode'] = '01'
 
                         if int(amount) == 123:
                             log_dir = os.path.join(merchant['path'], 'log')
@@ -111,7 +115,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                             log_file = UpmpConfig.query_type_file[trans_type]
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
-
+                            print(order_time, qn)
                             post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
                             log_file = UpmpConfig.sale_type_file[UpmpConfig.TRANS_TYPE_REFUND]
                             Logger.logging(log_dir, log_file, post_data)
@@ -122,23 +126,28 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-                        post_data, res_data = uc.void_retrieve(order_no, order_time)
-                        log_file = UpmpConfig.query_type_file[trans_type]
-                        Logger.logging(log_dir, log_file, post_data)
-                        Logger.logging(log_dir, log_file, res_data)
+                        if int(settle_amount) == 321:  # refund
+                            post_data, res_data = uc.void_retrieve(order_no, order_time)
+                            log_file = UpmpConfig.query_type_file[trans_type]
+                            Logger.logging(log_dir, log_file, post_data)
+                            Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-                        post_data, res_data = uc.refund_retrieve(order_no, order_time)
-                        log_file = UpmpConfig.query_type_file[trans_type]
-                        Logger.logging(log_dir, log_file, post_data)
-                        Logger.logging(log_dir, log_file, res_data)
+                        if int(settle_amount) == 1:   # void
+                            post_data, res_data = uc.refund_retrieve(order_no, order_time)
+                            log_file = UpmpConfig.query_type_file[trans_type]
+                            Logger.logging(log_dir, log_file, post_data)
+                            Logger.logging(log_dir, log_file, res_data)
 
                     if sc.is_merchant_test_done(log_dir):
                         print('========TEST DONE========')
                         print('=========TO EXCEL========')
+                        from excel.excel_handler import ExcelHandler
+                        eh = ExcelHandler()
+                        eh.save('./data/template.xlsx', os.path.join(merchant['path'], merchant['name'] + '.xlsx'), log_dir)
                         print('=========GIT PUSH========')
                         print('========SEND MAIL========')
-                        from util import mail
-                        mail.send_email()
+                        # from util import mail
+                        # mail.send_email()
                     else:
                         print('========CONTINUE========')
                 else:
