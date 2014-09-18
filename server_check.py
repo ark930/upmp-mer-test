@@ -6,7 +6,12 @@ import json
 
 
 class ServerCheck:
-    def get_untest_merchant_files(self, path):
+    def get_all_untest_merchant_files(self, path):
+        """
+        获取所有未测试商户的商户信息文件
+        :param path:
+        :return: 所有未测试商户的商户信息文件列表
+        """
         merchant_files = []
         test_files = []
         for (dirpath, dirnames, filenames) in os.walk(path):
@@ -22,6 +27,11 @@ class ServerCheck:
         return [item for item in merchant_files if item not in test_files]
 
     def get_merchant_info(self, path):
+        """
+        获取指定的未测试商户的商户信息
+        :param path:
+        :return: 指定的未测试商户的商户信息
+        """
         with open(path) as f:
             lines = f.readlines()
 
@@ -31,9 +41,13 @@ class ServerCheck:
         else:
             return None
 
-    def get_untest_merchant_json(self, root_path):
+    def get_all_untest_merchant_json(self, root_path):
+        """
+        获取所有未测试商户的商户信息（JSON格式），并记录到log文件中
+        :param root_path:
+        :return:所有未测试商户的商户信息（JSON格式）
+        """
         paths = self.search_test_dir(root_path)
-        print(paths)
         if paths is None:
             return None
 
@@ -43,7 +57,7 @@ class ServerCheck:
         data['count'] = 0
 
         for path in paths:
-            file_names = self.get_untest_merchant_files(path)
+            file_names = self.get_all_untest_merchant_files(path)
             data['count'] += len(file_names)
 
             for fname in file_names:
@@ -74,6 +88,11 @@ class ServerCheck:
         return data
 
     def search_test_dir(self, root_path):
+        """
+        获取按当前年月为路径的目录
+        :param root_path:
+        :return:
+        """
         # 获取当前年月
         date = datetime.date.today().strftime("%Y/%m")
 
@@ -84,6 +103,11 @@ class ServerCheck:
             return [os.path.join(dirpath, dirname) for dirname in dirnames]
 
     def get_merchant_info_from_log(self, mer_id):
+        """
+        从log文件中获取商户信息
+        :param mer_id: UPMP商户ID
+        :return:
+        """
         with open('untest_merchant.txt') as f:
             json_data = f.readline()
 
@@ -95,12 +119,21 @@ class ServerCheck:
 
         return None
 
+    def is_merchant_test_done(self, log_path):
+        """
+        检查商户是否已完成测试
+        :param log_path: 商户log路径
+        :return: True or False
+        """
+        for _, _, filenames in os.walk(log_path):
+            temp = ['charge.txt', 'void.txt', 'refund.txt', 'charge_query.txt', 'void_query.txt', 'refund_query.txt']
+            return sorted(filenames) == sorted(temp)
+
 
 if __name__ == "__main__":
     root_path = "./data"
     sc = ServerCheck()
-    data = sc.get_untest_merchant_json(root_path)
-
-    import json
-
-    print(json.dumps(data))
+    sc.is_merchant_test_done(root_path+'/2014/09/1/log/')
+    # data = sc.get_all_untest_merchant_json(root_path)
+    # import json
+    # print(json.dumps(data))
