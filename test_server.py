@@ -148,8 +148,10 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         eh.save('./data/template.xlsx', report_file, log_dir)
                         print('=========GIT PUSH========')
                         gm = RepoGit('./data/upmp-mer-files')
-                        gm.add(report_file)
-                        gm.add(os.path.join(log_dir, '*'))
+                        git_report_file = report_file[len('./data/upmp-mer-files'):]
+                        git_log_dir = log_dir[len('./data/upmp-mer-files'):]
+                        gm.add(git_report_file)
+                        gm.add(os.path.join(git_log_dir, '*'))
                         gm.commit("Merchant " + merchant['id'] + ' test finished')
                         print('========SEND MAIL========')
                         # from util import mail
