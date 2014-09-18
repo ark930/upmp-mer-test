@@ -13,10 +13,11 @@ from upmp.UpmpChannel import UpmpChannel
 from upmp.UpmpConfig import UpmpConfig
 from server_check import ServerCheck
 from logger.logger import Logger
+from repo.repo_git import RepoGit
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
-    root_path = "./data/upmp-merchant-files"
+    root_path = "./data/upmp-mer-files"
 
     def do_POST(self):
 
@@ -143,8 +144,13 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         print('=========TO EXCEL========')
                         from excel.excel_handler import ExcelHandler
                         eh = ExcelHandler()
-                        eh.save('./data/template.xlsx', os.path.join(merchant['path'], merchant['name'] + '.xlsx'), log_dir)
+                        report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
+                        eh.save('./data/template.xlsx', report_file, log_dir)
                         print('=========GIT PUSH========')
+                        gm = RepoGit()
+                        gm.add(report_file)
+                        gm.add(os.path.join(log_dir, '*'))
+                        gm.commit("Merchant " + merchant['id'] + ' test finished')
                         print('========SEND MAIL========')
                         # from util import mail
                         # mail.send_email()
