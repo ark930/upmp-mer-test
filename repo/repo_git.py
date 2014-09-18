@@ -19,7 +19,7 @@ class GitProgress(RemoteProgress):
 
 class RepoGit():
     def __init__(self):
-        self.local_repo_path = "../data/test"
+        self.local_repo_path = "../data/upmp-mer-files"
         self.remote_repo_path = "root@121.199.36.178:/var/www/upmp-test/upmp-mer-test/data/upmp-mer-files.git"
         self.repo = None
 
