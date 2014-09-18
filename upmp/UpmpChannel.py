@@ -3,12 +3,9 @@ import hashlib
 import time
 import urlparse
 import urllib2
-import urllib
-import os
 
 from BaseChannel import BaseChannel
 from UpmpConfig import UpmpConfig
-from logger.logger import Logger
 
 
 class UpmpChannel(BaseChannel):
@@ -22,7 +19,7 @@ class UpmpChannel(BaseChannel):
         sign = self._gen_sign(data_dict)
         original_sign = data_dict['signature']
 
-        return True if original_sign == sign else False
+        return original_sign == sign
 
     def _gen_sign(self, data_dict):
         sign_string = self._gen_sign_string(data_dict, ['signature', 'signMethod'])
@@ -36,6 +33,7 @@ class UpmpChannel(BaseChannel):
         req['signMethod'] = UpmpConfig.SIGN_METHOD
 
         return self.create_link_string(req)
+        # return urllib.urlencode(req)
 
     def _query_string_to_dict(self, qs):
         qs_dict = urlparse.parse_qs(qs)
@@ -199,6 +197,6 @@ if __name__ == '__main__':
         print(order_no, order_time, settle_amount, trans_type, mer_id, qn)
 
         if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
-            if settle_amount == '123':    # refund
+            if settle_amount == '123':  # refund
                 uc.charge_retrieve(order_no, order_time)
                 uc.refund(order_time, qn)

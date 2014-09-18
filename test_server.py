@@ -25,9 +25,10 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         if None != re.search('/api/v1/charge', self.path):
             ctype, _ = cgi.parse_header(self.headers.getheader('content-type'))
             if ctype == 'application/json':
-                json_data = json.loads(data)
-                amount = json_data['amount']
-                mer_id = json_data['id']
+                json_data = json.loads(data) if data else {}
+
+                mer_id = json_data['id'] if 'id' in json_data.keys() else '880000000002457'
+                amount = json_data['amount'] if 'amount' in json_data.keys() else 123
 
                 sc = ServerCheck()
                 merchant = sc.get_merchant_info_from_log(mer_id)
@@ -128,6 +129,16 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         log_file = UpmpConfig.query_type_file[trans_type]
                         Logger.logging(log_dir, log_file, post_data)
                         Logger.logging(log_dir, log_file, res_data)
+
+                    if sc.is_merchant_test_done(log_dir):
+                        print('========TEST DONE========')
+                        print('=========TO EXCEL========')
+                        print('=========GIT PUSH========')
+                        print('========SEND MAIL========')
+                        from util import mail
+                        mail.send_email()
+                    else:
+                        print('========CONTINUE========')
                 else:
                     self.send_response(400, 'Bad Request: notify fail')
                     self.send_header('Content-Type', 'application/json')
@@ -146,7 +157,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if None != re.search('/api/v1/merchant', self.path):
             sc = ServerCheck()
-            data = sc.get_untest_merchant_json(self.root_path)
+            data = sc.get_all_untest_merchant_json(self.root_path)
             print(data)
 
             self.send_response(200)
