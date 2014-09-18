@@ -41,8 +41,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         post_data, res_data, req_dict, res_dict = ret
 
                         res = dict()
-                        res['tn'] = res_dict['tn']
-                        res['mode'] = '01'
+                        res['upmp'] = dict()
+                        res['upmp']['tn'] = res_dict['tn']
+                        res['upmp']['mode'] = '01'
 
                         if int(amount) == 123:
                             log_dir = os.path.join(merchant['path'], 'log')
