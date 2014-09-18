@@ -41,14 +41,15 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         post_data, res_data, req_dict, res_dict = ret
 
                         res = dict()
-                        res['upmp'] = dict()
-                        res['upmp']['tn'] = res_dict['tn']
-                        res['upmp']['mode'] = '01'
+                        res['credential'] = dict()
+                        res['credential']['upmp'] = dict()
+                        res['credential']['upmp']['tn'] = res_dict['tn']
+                        res['credential']['upmp']['mode'] = '01'
 
                         if int(amount) == 123:
                             log_dir = os.path.join(merchant['path'], 'log')
-                            Logger.logging(log_dir, 'sale.txt', post_data)
-                            Logger.logging(log_dir, 'sale.txt', res_data)
+                            Logger.logging(log_dir, 'charge.txt', post_data)
+                            Logger.logging(log_dir, 'charge.txt', res_data)
 
                         self.send_response(200)
                         self.send_header('Content-Type', 'application/json')

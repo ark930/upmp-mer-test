@@ -19,8 +19,8 @@ class ExcelHandler:
 
     def txt_to_excel(self, workbook, log_path):
         files = [
-            ('sale.txt', 3),
-            ('sale_query.txt', 5),
+            ('charge.txt', 3),
+            ('charge_query.txt', 5),
             ('void.txt', 8),
             ('void_query.txt', 10),
             ('refund.txt', 13),
