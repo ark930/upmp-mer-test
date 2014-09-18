@@ -3,6 +3,7 @@ import hashlib
 import time
 import urlparse
 import urllib2
+import urllib
 import os
 
 from BaseChannel import BaseChannel
@@ -17,6 +18,29 @@ class UpmpChannel(BaseChannel):
         self.sk_md5 = hashlib.md5(self.sk).hexdigest()
         self.log_path = ''
 
+    def _verify_sign(self, data_dict):
+        sign = self._gen_sign(data_dict)
+        original_sign = data_dict['signature']
+
+        return True if original_sign == sign else False
+
+    def _gen_sign(self, data_dict):
+        sign_string = self._gen_sign_string(data_dict, ['signature', 'signMethod'])
+        sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
+
+        return sign
+
+    def _get_post_data(self, data_dict):
+        req = self.sort_dict(self.para_filter(data_dict))
+        req['signature'] = self._gen_sign(data_dict)
+        req['signMethod'] = UpmpConfig.SIGN_METHOD
+
+        return self.create_link_string(req)
+
+    def _query_string_to_dict(self, qs):
+        qs_dict = urlparse.parse_qs(qs)
+        return {key: qs_dict[key][0] for key in qs_dict}
+
     def charge(self, amount):
         req_dict = dict()
         req_dict['version'] = UpmpConfig.VERTION
@@ -28,40 +52,22 @@ class UpmpChannel(BaseChannel):
         req_dict['orderTime'] = time.strftime("%Y%m%d%H%M%S", time.localtime(int(time.time())))
         # receive_req['orderTimeout'] = int(receive_req['orderTime']) + 10000
         req_dict['orderNumber'] = self.random_id(12)
-        req_dict['orderDescription'] = '一个小朋友'
+        req_dict['orderDescription'] = 'a little boy'
         req_dict['orderAmount'] = amount
 
-        sign_string = self.gen_sign_string(req_dict, ['signature', 'signMethod'])
-        sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-        req = self.sort_dict(self.para_filter(req_dict))
-        req['signature'] = sign
-        req['signMethod'] = 'MD5'
-
-        post_data = self.create_link_string(req)
+        post_data = self._get_post_data(req_dict)
         print('request --', post_data)
 
-        if amount == 123:
-            Logger.logging(os.getcwd(), 'sale.txt', post_data)
-
-        res_dict = list()
         try:
             res = urllib2.urlopen(UpmpConfig.TRADE_URL, post_data)
-            res_str = res.read().decode('UTF-8')
+            res_data = res.read()
+            print('response --', res_data)
 
-            print('response --', res_str)
+            res_dict = self._query_string_to_dict(res_data)
 
-            if amount == 123:
-                Logger.logging(os.getcwd(), 'sale.txt', post_data)
-
-            res_dict = urlparse.parse_qs(res_str)
-            res_dict = {key: res_dict[key][0] for key in res_dict}
-            sign_string = self.gen_sign_string(res_dict, ['signature', 'signMethod'])
-            sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-            original_sign = res_dict['signature']
-
-            if original_sign == sign:
+            if self._verify_sign(res_dict):
                 if res_dict['respCode'] == '00':
-                    print('tn -- ', res_dict['tn'])
+                    return post_data, res_data, req_dict, res_dict
                 else:
                     print('respCode =', res_dict['respCode'])
                     print('respMsg =', res_dict['respMsg'])
@@ -72,16 +78,16 @@ class UpmpChannel(BaseChannel):
         except urllib2.URLError, e:
             print(e.args)
 
-        return req_dict, res_dict['tn']
+        return False
 
     def charge_retrieve(self, order_no, order_time):
-        self._retrieve(order_no, order_time, UpmpConfig.TRANS_TYPE_TRADE)
+        return self._retrieve(order_no, order_time, UpmpConfig.TRANS_TYPE_TRADE)
 
     def void_retrieve(self, order_no, order_time):
-        self._retrieve(order_no, order_time, UpmpConfig.TRANS_TYPE_VOID)
+        return self._retrieve(order_no, order_time, UpmpConfig.TRANS_TYPE_VOID)
 
     def refund_retrieve(self, order_no, order_time):
-        self._retrieve(order_no, order_time, UpmpConfig.TRANS_TYPE_REFUND)
+        return self._retrieve(order_no, order_time, UpmpConfig.TRANS_TYPE_REFUND)
 
     def _retrieve(self, order_no, order_time, trans_type):
         req_dict = dict()
@@ -92,44 +98,19 @@ class UpmpChannel(BaseChannel):
         req_dict['orderTime'] = order_time
         req_dict['orderNumber'] = order_no
 
-        sign_string = self.gen_sign_string(req_dict, ['signature', 'signMethod'])
-        sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-        req = self.sort_dict(self.para_filter(req_dict))
-        req['signature'] = sign
-        req['signMethod'] = 'MD5'
-
-        # post_data = urllib.parse.urlencode(req)
-        post_data = self.create_link_string(req)
+        post_data = self._get_post_data(req_dict)
         print('request --', post_data)
-
-        log_file = None
-        if trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-            log_file = 'refund_query.txt'
-        elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-            log_file = 'void_query.txt'
-        elif trans_type == UpmpConfig.TRANS_TYPE_TRADE:
-            log_file = 'sale_query.txt'
-        if log_file:
-            Logger.logging(os.getcwd(), log_file, post_data)
 
         res = urllib2.urlopen(UpmpConfig.QUERY_URL, post_data)
         try:
-            res_str = res.read()
-            print('response --', res_str)
+            res_data = res.read()
+            print('response ree--', res_data)
 
-            if log_file:
-                Logger.logging(os.getcwd(), log_file, res_str)
+            res_dict = self._query_string_to_dict(res_data)
 
-            res_dict = urlparse.parse_qs(res_str)
-            res_dict = {key: res_dict[key][0] for key in res_dict}
-            sign_string = self.gen_sign_string(res_dict, ['signature', 'signMethod'])
-            sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-            original_sign = res_dict['signature']
-
-            if original_sign == sign:
+            if self._verify_sign(res_dict):
                 if res_dict['respCode'] == '00':
-                    print('res_dict -- ', res_dict)
-                    return True
+                    return post_data, res_data
                 else:
                     print('respCode =', res_dict['respCode'])
                     print('respMsg =', res_dict['respMsg'])
@@ -158,49 +139,24 @@ class UpmpChannel(BaseChannel):
         req_dict['backEndUrl'] = UpmpConfig.NOTIFY_URL
         req_dict['orderTime'] = order_time
         req_dict['orderNumber'] = self.random_id(12)
-        req_dict['orderDescription'] = '两个小朋友'
+        req_dict['orderDescription'] = 'tow little boys'
         req_dict['orderAmount'] = order_amount
         req_dict['qn'] = qn
         print(req_dict)
 
-        sign_string = self.gen_sign_string(req_dict, ['signature', 'signMethod'])
-        sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-        req = self.sort_dict(self.para_filter(req_dict))
-        req['signature'] = sign
-        req['signMethod'] = 'MD5'
-
-        # post_data = urllib.parse.urlencode(req)
-        post_data = self.create_link_string(req)
+        post_data = self._get_post_data(req_dict)
         print('request --', post_data)
 
-        log_file = None
-        if trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-            log_file = 'refund.txt'
-        elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-            log_file = 'void.txt'
-        if log_file:
-            Logger.logging(os.getcwd(), log_file, post_data)
-
-        # res = urllib.request.urlopen(UpmpConfig.TRADE_URL, post_data.encode('UTF-8'))
         res = urllib2.urlopen(UpmpConfig.TRADE_URL, post_data)
-
         try:
-            res_str = res.read()
-            print('response --', res_str)
+            res_data = res.read()
+            print('response --', res_data)
 
-            if log_file:
-                Logger.logging(os.getcwd(), log_file, res_str)
+            res_dict = self._query_string_to_dict(res_data)
 
-            res_dict = urlparse.parse_qs(res_str)
-            res_dict = {key: res_dict[key][0] for key in res_dict}
-            sign_string = self.gen_sign_string(res_dict, ['signature', 'signMethod'])
-            sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-            original_sign = res_dict['signature']
-
-            if original_sign == sign:
+            if self._verify_sign(res_dict):
                 if res_dict['respCode'] == '00':
-                    print('res_dict -- ', res_dict)
-                    return True
+                    return post_data, res_data, req_dict, res_dict
                 else:
                     print('respCode =', res_dict['respCode'])
                     print('respMsg =', res_dict['respMsg'])
@@ -215,29 +171,10 @@ class UpmpChannel(BaseChannel):
         return False
 
     def notify(self, notify_data):
-        notify_dict = urlparse.parse_qs(notify_data)
-        notify_dict = {key: notify_dict[key][0] for key in notify_dict}
-        trans_type = notify_dict['transType']
-        settle_amount = notify_dict['settleAmount']
+        notify_dict = self._query_string_to_dict(notify_data)
 
-        sign_string = self.gen_sign_string(notify_dict, ['signature', 'signMethod'])
-        sign = hashlib.md5(sign_string + '&' + self.sk_md5).hexdigest()
-        original_sign = notify_dict['signature']
-
-        if original_sign == sign:
+        if self._verify_sign(notify_dict):
             if notify_dict['respCode'] == '00' and notify_dict['transStatus'] == '00':
-
-                log_file = None
-                if trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-                    log_file = 'refund.txt'
-                elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-                    log_file = 'void.txt'
-                elif trans_type == UpmpConfig.TRANS_TYPE_TRADE and settle_amount == '123':
-                    log_file = 'sale.txt'
-
-                if log_file:
-                    Logger.logging(os.getcwd(), log_file, notify_data)
-
                 return notify_dict
 
         return False

@@ -7,10 +7,12 @@ import re
 import cgi
 import json
 import urlparse
+import os
 
 from upmp.UpmpChannel import UpmpChannel
 from upmp.UpmpConfig import UpmpConfig
 from server_check import ServerCheck
+from logger.logger import Logger
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
@@ -25,23 +27,35 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             if ctype == 'application/json':
                 json_data = json.loads(data)
                 amount = json_data['amount']
-                mer_id = json_data['id'].encode('utf-8')
+                mer_id = json_data['id']
 
                 sc = ServerCheck()
                 merchant = sc.get_merchant_info_from_log(mer_id)
                 mer_key = merchant['sk']
                 if mer_key:
                     uc = UpmpChannel(mer_id, mer_key)
-                    req_dict, tn = uc.charge(amount)
+                    ret = uc.charge(amount)
+                    print(ret)
+                    if ret:
+                        post_data, res_data, req_dict, res_dict = ret
 
-                    res = dict()
-                    res['tn'] = tn
-                    res['mode'] = '01'
+                        res = dict()
+                        res['tn'] = res_dict['tn']
+                        res['mode'] = '01'
 
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(json.dumps(res))
+                        if int(amount) == 123:
+                            log_dir = os.path.join(merchant['path'], 'log')
+                            Logger.logging(log_dir, 'sale.txt', post_data)
+                            Logger.logging(log_dir, 'sale.txt', res_data)
+
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.end_headers()
+                        self.wfile.write(json.dumps(res))
+                    else:
+                        self.send_response(400, 'Bad Request: charge fail')
+                        self.send_header('Content-Type', 'application/json')
+                        self.end_headers()
                 else:
                     self.send_response(400, 'Bad Request: id not exist')
                     self.send_header('Content-Type', 'application/json')
@@ -52,8 +66,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 self.end_headers()
         elif None != re.search('api/v1/notify', self.path):
             print(data)
-            notify_data = urlparse.parse_qs(data)
-            notify_dict = {key: notify_data[key][0] for key in notify_data}
+            notify_data = data
+            notify_dict = urlparse.parse_qs(data)
+            notify_dict = {key: notify_dict[key][0] for key in notify_dict}
             mer_id = notify_dict['merId']
 
             sc = ServerCheck()
@@ -63,7 +78,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             if merchant:
                 mer_key = merchant['sk']
                 uc = UpmpChannel(mer_id, mer_key)
-                notify_dict = uc.notify(data)
+                notify_dict = uc.notify(notify_data)
 
                 if notify_dict:
                     order_no = notify_dict['orderNumber']
@@ -74,21 +89,45 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     qn = notify_dict['qn']
                     print(order_no, order_time, settle_amount, trans_type, mer_id, qn)
 
+                    log_dir = os.path.join(merchant['path'], 'log')
+                    log_file = UpmpConfig.sale_type_file[trans_type]
+                    if log_file == UpmpConfig.TRANS_TYPE_TRADE:
+                        if int(settle_amount) == 123:
+                            Logger.logging(log_dir, log_file, notify_data)
+                    elif log_file:
+                        Logger.logging(log_dir, log_file, notify_data)
+
                     self.send_response(200)
                     self.send_header('Content-Type', 'text/html')
                     self.end_headers()
                     self.wfile.write('success')
 
                     if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
-                        if settle_amount == '123':    # refund
-                            uc.charge_retrieve(order_no, order_time)
-                            uc.refund(order_time, qn)
-                        elif settle_amount == '321':  # void
-                            uc.void(order_time, order_amount, qn)
+                        if int(settle_amount) == 123:  # refund
+                            post_data, res_data = uc.charge_retrieve(order_no, order_time)
+                            log_file = UpmpConfig.query_type_file[trans_type]
+                            Logger.logging(log_dir, log_file, post_data)
+                            Logger.logging(log_dir, log_file, res_data)
+
+                            post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
+                            log_file = UpmpConfig.sale_type_file[UpmpConfig.TRANS_TYPE_REFUND]
+                            Logger.logging(log_dir, log_file, post_data)
+                            Logger.logging(log_dir, log_file, res_data)
+                        elif int(settle_amount) == 321:  # void
+                            post_data, res_data, req_dict, res_dict = uc.void(order_time, order_amount, qn)
+                            log_file = UpmpConfig.sale_type_file[UpmpConfig.TRANS_TYPE_VOID]
+                            Logger.logging(log_dir, log_file, post_data)
+                            Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-                        uc.void_retrieve(order_no, order_time)
+                        post_data, res_data = uc.void_retrieve(order_no, order_time)
+                        log_file = UpmpConfig.query_type_file[trans_type]
+                        Logger.logging(log_dir, log_file, post_data)
+                        Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-                        uc.refund_retrieve(order_no, order_time)
+                        post_data, res_data = uc.refund_retrieve(order_no, order_time)
+                        log_file = UpmpConfig.query_type_file[trans_type]
+                        Logger.logging(log_dir, log_file, post_data)
+                        Logger.logging(log_dir, log_file, res_data)
                 else:
                     self.send_response(400, 'Bad Request: notify fail')
                     self.send_header('Content-Type', 'application/json')
