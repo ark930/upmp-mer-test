@@ -17,9 +17,10 @@ class GitProgress(RemoteProgress):
         print(op_code, cur_count, max_count, message)
 
 
-class RepoGit():
-    def __init__(self):
-        self.local_repo_path = "../data/upmp-mer-files"
+class RepoGit:
+    def __init__(self, local_repo_path):
+        # self.local_repo_path = "../data/upmp-mer-files"
+        self.local_repo_path = local_repo_path
         self.remote_repo_path = "root@121.199.36.178:/var/www/upmp-test/upmp-mer-test/data/upmp-mer-files.git"
         self.repo = None
 
@@ -57,7 +58,7 @@ class RepoGit():
 
 
 if __name__ == "__main__":
-    gm = RepoGit()
+    gm = RepoGit('../data/upmp-mer-files')
     # gm.add("test.1")
     # gm.commit("first commit")
     # gm.pull()
