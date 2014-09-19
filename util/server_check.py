@@ -91,7 +91,7 @@ class ServerCheck:
 
     def search_test_dir(self, root_path):
         """
-        获取按当前年月为路径的目录
+        获取按当前年月为路径下的文件夹
         :param root_path:
         :return:
         """
@@ -104,14 +104,14 @@ class ServerCheck:
         for (dirpath, dirnames, filenames) in os.walk(path):
             return [os.path.join(dirpath, dirname) for dirname in dirnames]
 
-    def get_merchant_info_from_log(self, root_path, mer_id):
+    def get_merchant_info_by_mer_id(self, mer_id):
         """
         从log文件中获取商户信息
         :param mer_id: UPMP商户ID
         :return:
         """
         if not os.path.isfile(self.untest_merchant_txt_path):
-            self.get_all_untest_merchant_json(root_path)
+            return None
 
         with open(self.untest_merchant_txt_path) as f:
             json_data = f.readline()
@@ -124,6 +124,35 @@ class ServerCheck:
 
         return None
 
+    def remove_merchant_info_by_mer_id(self, mer_id):
+        """
+        从log文件中删除指定mer_id的商户数据
+        :param mer_id: 商户ID
+        :return:
+            True: 删除成功
+            False: 删除失败, 未找到指定mer_id的商户数据
+        """
+        if not os.path.isfile(self.untest_merchant_txt_path):
+            return False
+
+        with open(self.untest_merchant_txt_path) as f:
+            json_data = f.readline()
+
+        data = json.loads(json_data)
+        merchants = data['merchants']
+        for i in range(len(merchants)):
+            if merchants[i]['id'] == mer_id:
+                # 删除数据
+                del merchants[i]
+                data['count'] = data['count'] - 1 if data['count'] > 0 else 0
+
+                # 记录到log文件
+                with open(self.untest_merchant_txt_path, 'w') as f:
+                    f.write(json.dumps(data))
+                return True
+        else:
+            return False
+
     def is_merchant_test_done(self, log_path):
         """
         检查商户是否已完成测试
@@ -135,9 +164,11 @@ class ServerCheck:
             return sorted(filenames) == sorted(temp)
 
 if __name__ == "__main__":
-    root_path = "../data"
+    root_path = "./data/upmp-mer-files/"
     sc = ServerCheck()
-    sc.is_merchant_test_done(os.path.join(root_path, 'upmp-mer-files/2014/09/1/log/'))
-    # data = sc.get_all_untest_merchant_json(root_path)
-    # import json
-    # print(json.dumps(data))
+    # sc.is_merchant_test_done(os.path.join(root_path, '2014/09/1/log/'))
+
+    data = sc.get_all_untest_merchant_json(root_path)
+    print(json.dumps(data))
+
+    # print(sc.remove_merchant_info_by_mer_id('880000000002422'))

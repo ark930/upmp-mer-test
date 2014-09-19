@@ -32,7 +32,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 amount = json_data['amount'] if 'amount' in json_data.keys() else 123
 
                 sc = ServerCheck()
-                merchant = sc.get_merchant_info_from_log(self.root_path, mer_id)
+                if not os.path.isfile(sc.untest_merchant_txt_path):
+                    sc.get_all_untest_merchant_json(self.root_path)
+                merchant = sc.get_merchant_info_by_mer_id(mer_id)
                 mer_key = merchant['sk']
                 if mer_key:
                     uc = UpmpChannel(mer_id, mer_key)
@@ -51,15 +53,16 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         # res['credential']['upmp']['tn'] = res_dict['tn']
                         # res['credential']['upmp']['mode'] = '01'
 
-                        if int(amount) == 123:
-                            log_dir = os.path.join(merchant['path'], 'log')
-                            Logger.logging(log_dir, 'charge.txt', post_data)
-                            Logger.logging(log_dir, 'charge.txt', res_data)
-
                         self.send_response(200)
                         self.send_header('Content-Type', 'application/json')
                         self.end_headers()
                         self.wfile.write(json.dumps(res))
+
+                        # 如果金额正确并且商户号存在于untest_merchant.txt中
+                        if int(amount) in [1, 123, 321] and sc.get_merchant_info_by_mer_id(mer_id):
+                            log_dir = os.path.join(merchant['path'], 'log')
+                            Logger.logging(log_dir, 'charge.txt', post_data)
+                            Logger.logging(log_dir, 'charge.txt', res_data)
                     else:
                         self.send_response(400, 'Bad Request: charge fail')
                         self.send_header('Content-Type', 'application/json')
@@ -80,8 +83,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             mer_id = notify_dict['merId']
 
             sc = ServerCheck()
-            merchant = sc.get_merchant_info_from_log(self.root_path, mer_id)
-            print(merchant)
+            if not os.path.isfile(sc.untest_merchant_txt_path):
+                    sc.get_all_untest_merchant_json(self.root_path)
+            merchant = sc.get_merchant_info_by_mer_id(mer_id)
 
             if merchant:
                 mer_key = merchant['sk']
@@ -97,6 +101,15 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     qn = notify_dict['qn']
                     print(order_no, order_time, settle_amount, trans_type, mer_id, qn)
 
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html')
+                    self.end_headers()
+                    self.wfile.write('success')
+
+                    # 如果金额不正确或者商户号不存在于untest_merchant.txt中，则立即返回
+                    if int(order_amount) not in [1, 123, 321] or not sc.get_merchant_info_by_mer_id(mer_id):
+                        return
+
                     log_dir = os.path.join(merchant['path'], 'log')
                     log_file = UpmpConfig.sale_type_file[trans_type]
                     if log_file == UpmpConfig.TRANS_TYPE_TRADE:
@@ -104,11 +117,6 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                             Logger.logging(log_dir, log_file, notify_data)
                     elif log_file:
                         Logger.logging(log_dir, log_file, notify_data)
-
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'text/html')
-                    self.end_headers()
-                    self.wfile.write('success')
 
                     if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
                         if int(settle_amount) == 123:  # refund
@@ -127,20 +135,19 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-                        if int(settle_amount) == 321:  # refund
+                        if int(settle_amount) == 321:  # refund retrieve
                             post_data, res_data = uc.void_retrieve(order_no, order_time)
                             log_file = UpmpConfig.query_type_file[trans_type]
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-                        if int(settle_amount) == 1:   # void
+                        if int(settle_amount) == 1:   # void retrieve
                             post_data, res_data = uc.refund_retrieve(order_no, order_time)
                             log_file = UpmpConfig.query_type_file[trans_type]
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
 
                     if sc.is_merchant_test_done(log_dir):
-                        print('========TEST DONE========')
                         print('=========TO EXCEL========')
                         from util.excel_handler import ExcelHandler
                         eh = ExcelHandler()
@@ -156,8 +163,11 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         print('========SEND MAIL========')
                         # from util import mail
                         # mail.send_email()
+                        print('========REMOVE LOG=======')
+                        sc.remove_merchant_info_by_mer_id(mer_id)
+                        print('========TEST DONE========')
                     else:
-                        print('========CONTINUE========')
+                        print('========CONTINUE=========')
                 else:
                     self.send_response(400, 'Bad Request: notify fail')
                     self.send_header('Content-Type', 'application/json')
