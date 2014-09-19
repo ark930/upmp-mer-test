@@ -5,8 +5,8 @@ from smtplib import SMTPException
 
 
 def send_email():
-    sender = 'from'
-    receivers = ['to']
+    sender = 'wangxiao_8800@qq.com'
+    receivers = ['edwin.wang@pingplusplus.com']
 
     message = """
     Subject: UPMP merchant test report

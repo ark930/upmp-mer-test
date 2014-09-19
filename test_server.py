@@ -11,9 +11,9 @@ import os
 
 from upmp.UpmpChannel import UpmpChannel
 from upmp.UpmpConfig import UpmpConfig
-from server_check import ServerCheck
-from logger.logger import Logger
-from repo.repo_git import RepoGit
+from util.server_check import ServerCheck
+from util.logger import Logger
+from util.repo_git import RepoGit
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
@@ -142,7 +142,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     if sc.is_merchant_test_done(log_dir):
                         print('========TEST DONE========')
                         print('=========TO EXCEL========')
-                        from excel.excel_handler import ExcelHandler
+                        from util.excel_handler import ExcelHandler
                         eh = ExcelHandler()
                         report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
                         eh.save('./data/template.xlsx', report_file, log_dir)
