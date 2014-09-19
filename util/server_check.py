@@ -81,7 +81,7 @@ class ServerCheck:
 
         # 将未测试商户数据记录到文件
         data['merchants'] = temp_merchants
-        with open(untest_merchant_txt_path, 'w') as f:
+        with open(self.untest_merchant_txt_path, 'w') as f:
             f.write(json.dumps(data))
 
         # 将部分数据发送给客户端
@@ -110,10 +110,10 @@ class ServerCheck:
         :param mer_id: UPMP商户ID
         :return:
         """
-        if not os.path.isfile(untest_merchant_txt_path):
+        if not os.path.isfile(self.untest_merchant_txt_path):
             self.get_all_untest_merchant_json(root_path)
 
-        with open(untest_merchant_txt_path) as f:
+        with open(self.untest_merchant_txt_path) as f:
             json_data = f.readline()
 
         data = json.loads(json_data)
