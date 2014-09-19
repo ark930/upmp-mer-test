@@ -26,7 +26,10 @@ class Logger(object):
 
         # 若log_path不存在，则创建该目录
         if not os.path.isdir(log_path):
-            os.mkdir(log_file)
+            os.mkdir(log_path)
 
         with open(os.path.join(log_path, log_file), 'a') as f:
             f.write(msg + '\n')
+
+if __name__ == '__main__':
+    Logger.logging('./log', 'log.txt', 'test')
