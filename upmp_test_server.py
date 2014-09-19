@@ -135,39 +135,39 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-                        if int(settle_amount) == 321:  # refund retrieve
+                        if int(settle_amount) == 321:  # void retrieve
                             post_data, res_data = uc.void_retrieve(order_no, order_time)
                             log_file = UpmpConfig.query_type_file[trans_type]
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
                     elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-                        if int(settle_amount) == 1:   # void retrieve
+                        if int(settle_amount) == 1:   # refund retrieve
                             post_data, res_data = uc.refund_retrieve(order_no, order_time)
                             log_file = UpmpConfig.query_type_file[trans_type]
                             Logger.logging(log_dir, log_file, post_data)
                             Logger.logging(log_dir, log_file, res_data)
 
-                    if sc.is_merchant_test_done(log_dir):
-                        print('=========TO EXCEL========')
-                        from util.excel_handler import ExcelHandler
-                        eh = ExcelHandler()
-                        report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
-                        eh.save('./data/template.xlsx', report_file, log_dir)
-                        print('=========GIT PUSH========')
-                        gm = RepoGit(self.root_path)
-                        git_report_file = report_file[len(self.root_path) + 1:]
-                        git_log_dir = log_dir[len(self.root_path) + 1:]
-                        gm.add(git_report_file)
-                        gm.add(os.path.join(git_log_dir, '*'))
-                        gm.commit("Merchant " + merchant['id'] + ' test finished')
-                        print('========SEND MAIL========')
-                        # from util import mail
-                        # mail.send_email()
-                        print('========REMOVE LOG=======')
-                        sc.remove_merchant_info_by_mer_id(mer_id)
-                        print('========TEST DONE========')
-                    else:
-                        print('========CONTINUE=========')
+                            if sc.is_merchant_test_done(log_dir):
+                                print('=========TO EXCEL========')
+                                from util.excel_handler import ExcelHandler
+                                eh = ExcelHandler()
+                                report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
+                                eh.save('./data/template.xlsx', report_file, log_dir)
+                                print('=========GIT PUSH========')
+                                gm = RepoGit(self.root_path)
+                                git_report_file = report_file[len(self.root_path) + 1:]
+                                git_log_dir = log_dir[len(self.root_path) + 1:]
+                                gm.add(git_report_file)
+                                gm.add(os.path.join(git_log_dir, '*'))
+                                gm.commit("Merchant " + merchant['id'] + ' test finished')
+                                print('========SEND MAIL========')
+                                # from util import mail
+                                # mail.send_email()
+                                print('========REMOVE LOG=======')
+                                sc.remove_merchant_info_by_mer_id(mer_id)
+                                print('========TEST DONE========')
+                            else:
+                                print('========CONTINUE=========')
                 else:
                     self.send_response(400, 'Bad Request: notify fail')
                     self.send_header('Content-Type', 'application/json')
