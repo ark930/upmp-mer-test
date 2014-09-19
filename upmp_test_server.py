@@ -59,7 +59,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         self.wfile.write(json.dumps(res))
 
                         # 如果金额正确并且商户号存在于untest_merchant.txt中
-                        if int(amount) in [1, 123, 321] and sc.get_merchant_info_by_mer_id(mer_id):
+                        if int(amount) == 123 and sc.get_merchant_info_by_mer_id(mer_id):
                             log_dir = os.path.join(merchant['path'], 'log')
                             Logger.logging(log_dir, 'charge.txt', post_data)
                             Logger.logging(log_dir, 'charge.txt', res_data)
