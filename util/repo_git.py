@@ -21,7 +21,8 @@ class RepoGit:
     def __init__(self, local_repo_path):
         # self.local_repo_path = "../data/upmp-mer-files"
         self.local_repo_path = local_repo_path
-        self.remote_repo_path = "root@121.199.36.178:/var/www/upmp-test/upmp-mer-test/data/upmp-mer-files.git"
+        # self.remote_repo_path = "root@121.199.36.178:/var/www/upmp-test/upmp-mer-test/data/upmp-mer-files.git"
+        self.remote_repo_path = 'git@github.com:ark930/test.git'
         self.repo = None
 
         if not os.path.exists(self.local_repo_path):

@@ -160,6 +160,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                                 gm.add(git_report_file)
                                 gm.add(os.path.join(git_log_dir, '*'))
                                 gm.commit("Merchant " + merchant['id'] + ' test finished')
+                                gm.push()
                                 print('========SEND MAIL========')
                                 # from util import mail
                                 # mail.send_email()
@@ -185,6 +186,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if None != re.search('/api/v1/merchant', self.path):
+            # 更新商户数据库
+            rg = RepoGit(self.root_path)
+            rg.pull()
             sc = ServerCheck()
             data = sc.get_all_untest_merchant_json(self.root_path)
             print(data)
