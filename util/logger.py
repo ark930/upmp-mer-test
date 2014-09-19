@@ -23,5 +23,10 @@ class Logger(object):
         记录一行消息
         """
         # logging.info(msg)
+
+        # 若log_path不存在，则创建该目录
+        if not os.path.isdir(log_path):
+            os.mkdir(log_file)
+
         with open(os.path.join(log_path, log_file), 'a') as f:
             f.write(msg + '\n')
