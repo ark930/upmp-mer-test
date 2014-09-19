@@ -147,9 +147,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                         report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
                         eh.save('./data/template.xlsx', report_file, log_dir)
                         print('=========GIT PUSH========')
-                        gm = RepoGit('./data/upmp-mer-files')
-                        git_report_file = report_file[len('./data/upmp-mer-files'):]
-                        git_log_dir = log_dir[len('./data/upmp-mer-files'):]
+                        gm = RepoGit(self.root_path)
+                        git_report_file = report_file[len(self.root_path) + 1:]
+                        git_log_dir = log_dir[len(self.root_path) + 1:]
                         gm.add(git_report_file)
                         gm.add(os.path.join(git_log_dir, '*'))
                         gm.commit("Merchant " + merchant['id'] + ' test finished')
