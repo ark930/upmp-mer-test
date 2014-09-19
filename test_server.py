@@ -32,7 +32,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 amount = json_data['amount'] if 'amount' in json_data.keys() else 123
 
                 sc = ServerCheck()
-                merchant = sc.get_merchant_info_from_log(mer_id)
+                merchant = sc.get_merchant_info_from_log(root_path, mer_id)
                 mer_key = merchant['sk']
                 if mer_key:
                     uc = UpmpChannel(mer_id, mer_key)
@@ -80,7 +80,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             mer_id = notify_dict['merId']
 
             sc = ServerCheck()
-            merchant = sc.get_merchant_info_from_log(mer_id)
+            merchant = sc.get_merchant_info_from_log(root_path, mer_id)
             print(merchant)
 
             if merchant:

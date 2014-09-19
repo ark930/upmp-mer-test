@@ -6,6 +6,8 @@ import json
 
 
 class ServerCheck:
+    untest_merchant_txt_path = './data/untest_merchant.txt'
+
     def get_all_untest_merchant_files(self, path):
         """
         获取所有未测试商户的商户信息文件
@@ -79,7 +81,7 @@ class ServerCheck:
 
         # 将未测试商户数据记录到文件
         data['merchants'] = temp_merchants
-        with open('./data/untest_merchant.txt', 'w') as f:
+        with open(untest_merchant_txt_path, 'w') as f:
             f.write(json.dumps(data))
 
         # 将部分数据发送给客户端
@@ -102,13 +104,16 @@ class ServerCheck:
         for (dirpath, dirnames, filenames) in os.walk(path):
             return [os.path.join(dirpath, dirname) for dirname in dirnames]
 
-    def get_merchant_info_from_log(self, mer_id):
+    def get_merchant_info_from_log(self, root_path, mer_id):
         """
         从log文件中获取商户信息
         :param mer_id: UPMP商户ID
         :return:
         """
-        with open('./data/untest_merchant.txt') as f:
+        if not os.path.isfile(untest_merchant_txt_path):
+            self.get_all_untest_merchant_json(root_path)
+
+        with open(untest_merchant_txt_path) as f:
             json_data = f.readline()
 
         data = json.loads(json_data)
@@ -132,7 +137,7 @@ class ServerCheck:
 if __name__ == "__main__":
     root_path = "../data"
     sc = ServerCheck()
-    sc.is_merchant_test_done(root_path+'/upmp-mer-files/2014/09/1/log/')
+    sc.is_merchant_test_done(os.path.join(root_path, 'upmp-mer-files/2014/09/1/log/'))
     # data = sc.get_all_untest_merchant_json(root_path)
     # import json
     # print(json.dumps(data))
