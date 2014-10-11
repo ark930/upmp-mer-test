@@ -12,7 +12,7 @@ class UpmpConfig:
 
     QUERY_URL = 'http://202.101.25.178:8080/gateway/merchant/query'
     TRADE_URL = 'http://202.101.25.178:8080/gateway/merchant/trade'
-    NOTIFY_URL = 'http://121.199.36.178:8085/api/v1/notify'
+    NOTIFY_URL = 'http://121.199.36.178:8085/api/notify'
 
     sale_type_file = {
         TRANS_TYPE_TRADE: 'charge.txt',
