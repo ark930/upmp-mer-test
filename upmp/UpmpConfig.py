@@ -25,3 +25,9 @@ class UpmpConfig:
         TRANS_TYPE_VOID: 'void_query.txt',
         TRANS_TYPE_REFUND: 'refund_query.txt'
     }
+
+    notify_type_file = {
+        TRANS_TYPE_TRADE: 'charge_notify.txt',
+        TRANS_TYPE_VOID: 'void_notify.txt',
+        TRANS_TYPE_REFUND: 'refund_notify.txt'
+    }

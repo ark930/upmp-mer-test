@@ -56,8 +56,9 @@ class UpmpHandler:
         # 如果金额为123并且商户号存在于untest_merchant.txt中, 将数据记录到charge.txt中
         if int(amount) == 123 and sc.get_merchant_info_by_mer_id(mer_id):
             log_dir = os.path.join(merchant['path'], 'log')
-            Logger.logging(log_dir, 'charge.txt', post_data)
-            Logger.logging(log_dir, 'charge.txt', res_data)
+            log_file = UpmpConfig.sale_type_file[UpmpConfig.TRANS_TYPE_TRADE]
+            Logger.logging(log_dir, log_file, post_data, 'w')
+            Logger.logging(log_dir, log_file, res_data)
 
         return res
 
@@ -80,7 +81,6 @@ class UpmpHandler:
         mer_key = merchant['sk']
         uc = UpmpChannel(mer_id, mer_key)
         notify_dict = uc.notify(notify_data)
-        print '============'
         UpmpHandler.to_log(notify_data, notify_dict, mer_id, merchant, uc)
 
         return
@@ -114,40 +114,40 @@ class UpmpHandler:
             return
 
         log_dir = os.path.join(merchant['path'], 'log')
-        log_file = UpmpConfig.sale_type_file[trans_type]
+        log_file = UpmpConfig.notify_type_file[trans_type]
         if log_file == UpmpConfig.TRANS_TYPE_TRADE:
             if int(settle_amount) == 123:
-                Logger.logging(log_dir, log_file, notify_data)
+                Logger.logging(log_dir, log_file, notify_data, 'w')
         elif log_file:
-            Logger.logging(log_dir, log_file, notify_data)
+            Logger.logging(log_dir, log_file, notify_data, 'w')
 
         if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
             if int(settle_amount) == 123:  # refund
                 post_data, res_data = uc.charge_retrieve(order_no, order_time)
                 log_file = UpmpConfig.query_type_file[trans_type]
-                Logger.logging(log_dir, log_file, post_data)
+                Logger.logging(log_dir, log_file, post_data, 'w')
                 Logger.logging(log_dir, log_file, res_data)
-                print(order_time, qn)
+                # print(order_time, qn)
                 post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
                 log_file = UpmpConfig.sale_type_file[UpmpConfig.TRANS_TYPE_REFUND]
-                Logger.logging(log_dir, log_file, post_data)
+                Logger.logging(log_dir, log_file, post_data, 'w')
                 Logger.logging(log_dir, log_file, res_data)
             elif int(settle_amount) == 321:  # void
                 post_data, res_data, req_dict, res_dict = uc.void(order_time, order_amount, qn)
                 log_file = UpmpConfig.sale_type_file[UpmpConfig.TRANS_TYPE_VOID]
-                Logger.logging(log_dir, log_file, post_data)
+                Logger.logging(log_dir, log_file, post_data, 'w')
                 Logger.logging(log_dir, log_file, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
             if int(settle_amount) == 321:  # void retrieve
                 post_data, res_data = uc.void_retrieve(order_no, order_time)
                 log_file = UpmpConfig.query_type_file[trans_type]
-                Logger.logging(log_dir, log_file, post_data)
+                Logger.logging(log_dir, log_file, post_data, 'w')
                 Logger.logging(log_dir, log_file, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
             if int(settle_amount) == 1:  # refund retrieve
                 post_data, res_data = uc.refund_retrieve(order_no, order_time)
                 log_file = UpmpConfig.query_type_file[trans_type]
-                Logger.logging(log_dir, log_file, post_data)
+                Logger.logging(log_dir, log_file, post_data, 'w')
                 Logger.logging(log_dir, log_file, res_data)
 
                 if sc.is_merchant_test_done(log_dir):

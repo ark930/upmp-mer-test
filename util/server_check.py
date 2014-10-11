@@ -160,8 +160,19 @@ class ServerCheck:
         :return: True or False
         """
         for _, _, filenames in os.walk(log_path):
-            temp = ['charge.txt', 'void.txt', 'refund.txt', 'charge_query.txt', 'void_query.txt', 'refund_query.txt']
+            temp = [
+                'charge.txt',
+                'void.txt',
+                'refund.txt',
+                'charge_query.txt',
+                'void_query.txt',
+                'refund_query.txt',
+                'charge_notify.txt',
+                'void_notify.txt',
+                'refund_notify.txt'
+            ]
             return sorted(filenames) == sorted(temp)
+
 
 if __name__ == "__main__":
     root_path = "./data/upmp-mer-files/"

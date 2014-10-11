@@ -18,7 +18,7 @@ class Logger(object):
     #                         level=logging.INFO)
 
     @staticmethod
-    def logging(log_path, log_file, msg):
+    def logging(log_path, log_file, msg, mode = 'a'):
         """
         记录一行消息
         """
@@ -28,7 +28,7 @@ class Logger(object):
         if not os.path.isdir(log_path):
             os.mkdir(log_path)
 
-        with open(os.path.join(log_path, log_file), 'a') as f:
+        with open(os.path.join(log_path, log_file), mode) as f:
             f.write(msg + '\n')
 
 if __name__ == '__main__':
