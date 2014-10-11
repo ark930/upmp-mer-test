@@ -1,3 +1,5 @@
+# coding: utf-8
+
 class UpmpConfig:
     VERTION = '1.0.0'
     CHARSET = 'UTF-8'

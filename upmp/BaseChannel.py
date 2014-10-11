@@ -1,7 +1,9 @@
-__author__ = 'edwin'
+# coding: utf-8
 
 from collections import OrderedDict
-import string, random
+import string
+import random
+
 
 class BaseChannel:
     def _gen_sign_string(self, para, filter_para=[]):
@@ -27,4 +29,4 @@ class BaseChannel:
         return OrderedDict(sorted(para.items()))
 
     def random_id(self, length):
-        return ''.join(random.choice(string.ascii_letters + string.digits) for i in range(length))
+        return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))

@@ -6,6 +6,7 @@ import urllib2
 
 from BaseChannel import BaseChannel
 from UpmpConfig import UpmpConfig
+from exception.UpmpException import InvalidNotifyException
 
 
 class UpmpChannel(BaseChannel):
@@ -170,12 +171,11 @@ class UpmpChannel(BaseChannel):
 
     def notify(self, notify_data):
         notify_dict = self._query_string_to_dict(notify_data)
-
         if self._verify_sign(notify_dict):
             if notify_dict['respCode'] == '00' and notify_dict['transStatus'] == '00':
                 return notify_dict
 
-        return False
+        raise InvalidNotifyException
 
 
 if __name__ == '__main__':
