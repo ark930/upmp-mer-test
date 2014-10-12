@@ -132,7 +132,7 @@ class UpmpHandler:
 
         if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
             if int(settle_amount) == 123:
-                db.set_upmp_charge_notify_data(notify_data)
+                db.set_upmp_charge_notify_data(mer_id, notify_data)
 
         if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
             if int(settle_amount) == 123:  # refund
