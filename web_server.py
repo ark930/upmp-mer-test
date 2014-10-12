@@ -44,7 +44,7 @@ class notify:
         try:
             data = web.data()
             UpmpHandler.notify(data)
-            web.header('Content-Type', 'application/json')
+            web.header('Content-Type', 'text/html')
             raise web.OK('success')
         except InvalidMerchantException:
             raise web.BadRequest('Invalid merchant')

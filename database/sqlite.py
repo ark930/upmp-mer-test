@@ -81,7 +81,6 @@ class Sqlite:
         self.c.execute("SELECT * FROM upmp WHERE merid=?", (merid,))
         values = self.c.fetchone()
         if values:
-            print values
             keys = ['name', 'id', 'sk',
                     'charge_req', 'charge_res', 'charge_notify', 'charge_query_req', 'charge_query_res',
                     'void_req', 'void_res', 'void_notify', 'void_query_req', 'void_query_res',

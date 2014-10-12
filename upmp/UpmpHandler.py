@@ -110,7 +110,7 @@ class UpmpHandler:
         # 如果商户号不存，则立即返回
         db = Sqlite()
         merchant = db.get_upmp_data_by_merid(mer_id)
-        if merchant:
+        if not merchant:
             return
 
         if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
