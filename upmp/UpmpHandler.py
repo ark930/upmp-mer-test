@@ -137,6 +137,8 @@ class UpmpHandler:
                 db.set_upmp_refund_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
             print('=========void_notify========')
+            db.set_upmp_void_notify_data(mer_id, notify_data)
+
             if not merchant['void_query_res']:
                 print('=========void_query========')
                 # void retrieve
@@ -144,6 +146,8 @@ class UpmpHandler:
                 db.set_upmp_void_query_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
             print('=========refund_notify========')
+            db.set_upmp_refund_notify_data(mer_id, notify_data)
+
             if not merchant['refund_query_res']:
                 print('=========refund_query========')
                 # refund retrieve
