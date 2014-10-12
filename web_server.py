@@ -61,10 +61,16 @@ class merchant:
         raise web.OK(json.dumps(merchant_data))
 
 
+class MyWebApplication(web.application):
+    def run(self, port=8080, *middleware):
+        func = self.wsgifunc(*middleware)
+        return web.httpserver.runsimple(func, ('0.0.0.0', port))
+
+
 if __name__ == "__main__":
     def notfound():
         return web.notfound("Sorry, the page you were looking for was not found.")
 
-    app = web.application(urls, globals())
+    app = MyWebApplication(urls, globals())
     app.notfound = notfound
-    app.run()
+    app.run(port=8085)
