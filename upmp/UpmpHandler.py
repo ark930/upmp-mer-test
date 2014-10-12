@@ -27,7 +27,11 @@ class UpmpHandler:
 
         sc = ServerCheck()
         if not os.path.isfile(sc.untest_merchant_txt_path):
-            sc.get_all_untest_merchant_json(root_path)
+            UpmpHandler.query_merchant_info(root_path)
+        else:
+            merchant = sc.get_merchant_info_by_mer_id(mer_id)
+            if not merchant or not merchant['sk']:
+                UpmpHandler.query_merchant_info(root_path)
 
         merchant = sc.get_merchant_info_by_mer_id(mer_id)
         if not merchant or not merchant['sk']:
