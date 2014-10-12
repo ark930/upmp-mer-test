@@ -159,13 +159,12 @@ class UpmpHandler:
             from util.excel_handler import ExcelHandler
 
             eh = ExcelHandler()
-            # report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
             report_file = os.path.join('data/2014', merchant['id'] + '.xlsx')
             merchant = db.get_upmp_data_by_merid(mer_id)
             eh.save('./data/template.xlsx', report_file, merchant)
             print('=========GIT PUSH========')
             repo = RepoGit(root_path)
-            repo.add('data/2014/')
+            repo.add(os.path.join('2014', '*'))
             repo.commit("Merchant " + merchant['id'] + ' test finished')
             repo.push()
             # git_report_file = report_file[len(root_path) + 1:]
