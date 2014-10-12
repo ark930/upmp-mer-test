@@ -161,7 +161,8 @@ class UpmpHandler:
             eh = ExcelHandler()
             # report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
             report_file = merchant['id'] + '.xlsx'
-            eh.save('./data/template.xlsx', report_file, log_dir)
+            merchant = db.get_upmp_data_by_merid(mer_id)
+            eh.save('./data/template.xlsx', report_file, merchant)
             # print('=========GIT PUSH========')
             # gm = RepoGit(root_path)
             # git_report_file = report_file[len(root_path) + 1:]
