@@ -54,8 +54,7 @@ class UpmpHandler:
         res['upmp']['tn'] = res_dict['tn']
         res['upmp']['mode'] = '01'
 
-        # 如果金额为123,则记录数据
-        if int(amount) == 123:
+        if not merchant['charge_res']:
             db.set_upmp_charge_data(mer_id, post_data, res_data)
 
         return res
@@ -99,7 +98,7 @@ class UpmpHandler:
 
     @staticmethod
     def to_log(notify_data, notify_dict, mer_id, uc):
-        print notify_dict
+        # print notify_dict
         order_no = notify_dict['orderNumber']
         order_time = notify_dict['orderTime']
         settle_amount = notify_dict['settleAmount']
