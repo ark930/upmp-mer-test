@@ -3,7 +3,7 @@
 import datetime
 import os
 import json
-
+from database.sqlite import Sqlite
 
 class ServerCheck:
     untest_merchant_txt_path = './data/untest_merchant.txt'
@@ -103,6 +103,11 @@ class ServerCheck:
         path = os.path.join(root_path, date)
 
         return path
+
+    @staticmethod
+    def get_merchant_by_mer_id(mer_id):
+        s = Sqlite()
+        return s.get_upmp_data_by_merid(mer_id)
 
     def get_merchant_info_by_mer_id(self, mer_id):
         """

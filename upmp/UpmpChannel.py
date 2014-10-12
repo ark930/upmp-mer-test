@@ -144,12 +144,12 @@ class UpmpChannel(BaseChannel):
         print(req_dict)
 
         post_data = self._get_post_data(req_dict)
-        print('request --', post_data)
+        # print('request --', post_data)
 
         res = urllib2.urlopen(UpmpConfig.TRADE_URL, post_data)
         try:
             res_data = res.read()
-            # print('response --', res_data)
+            print('response --', res_data)
 
             res_dict = self._query_string_to_dict(res_data)
 
