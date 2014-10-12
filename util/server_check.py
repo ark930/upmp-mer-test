@@ -116,11 +116,13 @@ class ServerCheck:
         with open(self.untest_merchant_txt_path) as f:
             json_data = f.readline()
 
-        data = json.loads(json_data)
-
-        for item in data['merchants']:
-            if item['id'] == mer_id:
-                return item
+        try:
+            data = json.loads(json_data)
+            for item in data['merchants']:
+                if item['id'] == mer_id:
+                    return item
+        except ValueError:
+            return None
 
         return None
 
