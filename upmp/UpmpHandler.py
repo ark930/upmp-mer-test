@@ -55,6 +55,7 @@ class UpmpHandler:
         res['upmp']['mode'] = '01'
 
         if not merchant['charge_res']:
+            print('=========charge========')
             db.set_upmp_charge_data(mer_id, post_data, res_data)
 
         return res
@@ -135,12 +136,14 @@ class UpmpHandler:
                 post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
                 db.set_upmp_refund_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
+            print('=========void_notify========')
             if not merchant['void_query_res']:
                 print('=========void_query========')
                 # void retrieve
                 post_data, res_data = uc.void_retrieve(order_no, order_time)
                 db.set_upmp_void_query_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
+            print('=========refund_notify========')
             if not merchant['refund_query_res']:
                 print('=========refund_query========')
                 # refund retrieve
