@@ -119,31 +119,30 @@ class UpmpHandler:
                 db.set_upmp_charge_notify_data(mer_id, notify_data)
 
             if not merchant['charge_query_res']:
-                print('=========charge_query_res========')
+                print('=========charge_query========')
                 # charge retrieve
                 post_data, res_data = uc.charge_retrieve(order_no, order_time)
                 db.set_upmp_charge_query_data(mer_id, post_data, res_data)
 
             if not merchant['void_notify']:
-                print('=========void_notify========')
+                print('=========void========')
                 # void
                 post_data, res_data, req_dict, res_dict = uc.void(order_time, order_amount, qn)
                 db.set_upmp_void_data(mer_id, post_data, res_data)
-
-            if not merchant['refund_notify']:
-                print('=========refund_notify========')
+            elif not merchant['refund_notify']:
+                print('=========refund========')
                 # refund
                 post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
                 db.set_upmp_refund_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
             if not merchant['void_query_res']:
-                print('=========void_query_res========')
+                print('=========void_query========')
                 # void retrieve
                 post_data, res_data = uc.void_retrieve(order_no, order_time)
                 db.set_upmp_void_query_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
             if not merchant['refund_query_res']:
-                print('=========refund_query_res========')
+                print('=========refund_query========')
                 # refund retrieve
                 post_data, res_data = uc.refund_retrieve(order_no, order_time)
                 db.set_upmp_refund_query_data(mer_id, post_data, res_data)
