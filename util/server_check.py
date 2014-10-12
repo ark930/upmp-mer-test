@@ -49,8 +49,9 @@ class ServerCheck:
         :param root_path:
         :return:所有未测试商户的商户信息（JSON格式）
         """
-        paths = self.search_test_dir(root_path)
-        if paths is None:
+        path = self.search_test_dir(root_path)
+
+        if path is None:
             return None
 
         data = dict()
@@ -58,26 +59,26 @@ class ServerCheck:
         temp_merchants = list()
         data['count'] = 0
 
-        for path in paths:
-            file_names = self.get_all_untest_merchant_files(path)
-            data['count'] += len(file_names)
+        file_names = self.get_all_untest_merchant_files(path)
+        print file_names
+        data['count'] += len(file_names)
 
-            for fname in file_names:
-                mer_file = os.path.join(path, fname + '.txt')
-                mer_name, mer_id, mer_sk = self.get_merchant_info(mer_file)
-                merchant = dict()
-                merchant['name'] = mer_name
-                merchant['id'] = mer_id
-                merchant['sk'] = mer_sk
-                merchant['path'] = path
-                merchant['file'] = fname + '.txt'
-                temp_merchants.append(merchant.copy())
+        for fname in file_names:
+            mer_file = os.path.join(path, fname + '.txt')
+            mer_name, mer_id, mer_sk = self.get_merchant_info(mer_file)
+            merchant = dict()
+            merchant['name'] = mer_name
+            merchant['id'] = mer_id
+            merchant['sk'] = mer_sk
+            merchant['path'] = path
+            merchant['file'] = fname + '.txt'
+            temp_merchants.append(merchant.copy())
 
-                # 客户端不接收敏感数据
-                del merchant['sk']
-                del merchant['path']
-                del merchant['file']
-                merchants.append(merchant)
+            # 客户端不接收敏感数据
+            del merchant['sk']
+            del merchant['path']
+            del merchant['file']
+            merchants.append(merchant)
 
         # 将未测试商户数据记录到文件
         data['merchants'] = temp_merchants
@@ -96,13 +97,12 @@ class ServerCheck:
         :return:
         """
         # 获取当前年月
-        date = datetime.date.today().strftime("%Y/%m")
-
-        path = os.path.join(root_path, date)
+        date = datetime.date.today().strftime("%Y")
 
         # 获取测试目录
-        for (dirpath, dirnames, filenames) in os.walk(path):
-            return [os.path.join(dirpath, dirname) for dirname in dirnames]
+        path = os.path.join(root_path, date)
+
+        return path
 
     def get_merchant_info_by_mer_id(self, mer_id):
         """
@@ -175,7 +175,7 @@ class ServerCheck:
 
 
 if __name__ == "__main__":
-    root_path = "./data/upmp-mer-files/"
+    root_path = "../data/"
     sc = ServerCheck()
     # sc.is_merchant_test_done(os.path.join(root_path, '2014/09/1/log/'))
 

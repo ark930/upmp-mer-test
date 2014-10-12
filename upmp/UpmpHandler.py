@@ -13,7 +13,7 @@ from UpmpChannel import UpmpChannel
 from UpmpConfig import UpmpConfig
 from util.logger import Logger
 
-root_path = "data/upmp-mer-files"
+root_path = "data"
 
 class UpmpHandler:
     @staticmethod

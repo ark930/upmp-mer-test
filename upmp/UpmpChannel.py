@@ -51,7 +51,7 @@ class UpmpChannel(BaseChannel):
         req_dict['orderTime'] = time.strftime("%Y%m%d%H%M%S", time.localtime(int(time.time())))
         # receive_req['orderTimeout'] = int(receive_req['orderTime']) + 10000
         req_dict['orderNumber'] = self.random_id(12)
-        req_dict['orderDescription'] = 'a little boy'
+        req_dict['orderDescription'] = 'alittleboy'
         req_dict['orderAmount'] = amount
 
         post_data = self._get_post_data(req_dict)
@@ -138,7 +138,7 @@ class UpmpChannel(BaseChannel):
         req_dict['backEndUrl'] = UpmpConfig.NOTIFY_URL
         req_dict['orderTime'] = order_time
         req_dict['orderNumber'] = self.random_id(12)
-        req_dict['orderDescription'] = 'tow little boys'
+        req_dict['orderDescription'] = 'towlittleboys'
         req_dict['orderAmount'] = order_amount
         req_dict['qn'] = qn
         print(req_dict)
