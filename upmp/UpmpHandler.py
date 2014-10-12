@@ -1,21 +1,17 @@
 # coding: utf-8
 
-import re
 import os
 import urlparse
 
 from util.repo_git import RepoGit
-from util.server_check import ServerCheck
-from exception.NetException import *
 from exception.UpmpException import *
-
 from UpmpChannel import UpmpChannel
 from UpmpConfig import UpmpConfig
-from util.logger import Logger
-
 from database.sqlite import Sqlite
 
+
 root_path = "data"
+
 
 class UpmpHandler:
     @staticmethod
@@ -85,18 +81,6 @@ class UpmpHandler:
         return
 
     @staticmethod
-    def query_merchant_info(data_path):
-        """
-        查询商户信息
-        :return:
-        """
-        # 更新商户数据库
-        rg = RepoGit(data_path)
-        rg.pull()
-        sc = ServerCheck()
-        return sc.get_all_untest_merchant_json(data_path)
-
-    @staticmethod
     def get_merchant_info_by_merid(path, mer_id):
         """
         获取指定的未测试商户的商户信息
@@ -122,61 +106,69 @@ class UpmpHandler:
         order_amount = settle_amount
         trans_type = notify_dict['transType']
         qn = notify_dict['qn']
-        print(order_no, order_time, settle_amount, trans_type, mer_id, qn)
+        # print(order_no, order_time, settle_amount, trans_type, mer_id, qn)
 
-        # 如果金额不正确或者商户号不存，则立即返回
+        # 如果商户号不存，则立即返回
         db = Sqlite()
         merchant = db.get_upmp_data_by_merid(mer_id)
-        if int(order_amount) not in [1, 123, 321] or not merchant:
+        if merchant:
             return
 
         if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
-            if int(settle_amount) == 123:
+            # if int(settle_amount) == 123:
+            if not merchant['charge_notify']:
                 db.set_upmp_charge_notify_data(mer_id, notify_data)
 
-        if trans_type == UpmpConfig.TRANS_TYPE_TRADE:
-            if int(settle_amount) == 123:  # refund
+            if not merchant['charge_query_res']:
+                # charge retrieve
                 post_data, res_data = uc.charge_retrieve(order_no, order_time)
                 db.set_upmp_charge_query_data(mer_id, post_data, res_data)
 
-                post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
-                db.set_upmp_refund_data(mer_id, post_data, res_data)
-            elif int(settle_amount) == 321:  # void
+            if not merchant['void_notify']:
+                # void
                 post_data, res_data, req_dict, res_dict = uc.void(order_time, order_amount, qn)
                 db.set_upmp_void_data(mer_id, post_data, res_data)
+
+            # elif int(settle_amount) == 321:
+            if not merchant['refund_notify']:
+                # refund
+                post_data, res_data, req_dict, res_dict = uc.refund(order_time, qn)
+                db.set_upmp_refund_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_VOID:
-            if int(settle_amount) == 321:  # void retrieve
+            # if int(settle_amount) == 321:
+            if not merchant['void_query_res']:
+                # void retrieve
                 post_data, res_data = uc.void_retrieve(order_no, order_time)
                 db.set_upmp_void_query_data(mer_id, post_data, res_data)
         elif trans_type == UpmpConfig.TRANS_TYPE_REFUND:
-            if int(settle_amount) == 1:  # refund retrieve
+            # if int(settle_amount) == 1:
+            if not merchant['refund_query_res']:
+                # refund retrieve
                 post_data, res_data = uc.refund_retrieve(order_no, order_time)
                 db.set_upmp_refund_query_data(mer_id, post_data, res_data)
 
-                # if sc.is_merchant_test_done(log_dir):
-                if db.is_upmp_data_complete(mer_id):
-                    print('=========TO EXCEL========')
-                    from util.excel_handler import ExcelHandler
-                    eh = ExcelHandler()
-                    # report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
-                    report_file = merchant['id'] + '.xlsx'
-                    eh.save('./data/template.xlsx', report_file, log_dir)
-                    # print('=========GIT PUSH========')
-                    # gm = RepoGit(root_path)
-                    # git_report_file = report_file[len(root_path) + 1:]
-                    # git_log_dir = log_dir[len(root_path) + 1:]
-                    # gm.add(git_report_file)
-                    # gm.add(os.path.join(git_log_dir, '*'))
-                    # gm.commit("Merchant " + merchant['id'] + ' test finished')
-                    # gm.push()
-                    # print('========SEND MAIL========')
-                    # from util import mail
-                    # mail.send_email()
-                    # print('========REMOVE DATA=======')
-                    # sc.remove_merchant_info_by_mer_id(mer_id)
-                    print('========TEST DONE========')
-                else:
-                    print('========CONTINUE=========')
+        if db.is_upmp_data_complete(mer_id):
+            print('=========TO EXCEL========')
+            from util.excel_handler import ExcelHandler
+
+            eh = ExcelHandler()
+            # report_file = os.path.join(merchant['path'], merchant['id'] + '.xlsx')
+            report_file = merchant['id'] + '.xlsx'
+            eh.save('./data/template.xlsx', report_file, log_dir)
+            # print('=========GIT PUSH========')
+            # gm = RepoGit(root_path)
+            # git_report_file = report_file[len(root_path) + 1:]
+            # git_log_dir = log_dir[len(root_path) + 1:]
+            # gm.add(git_report_file)
+            # gm.add(os.path.join(git_log_dir, '*'))
+            # gm.commit("Merchant " + merchant['id'] + ' test finished')
+            # gm.push()
+            # print('========SEND MAIL========')
+            # from util import mail
+            # mail.send_email()
+            print('========TEST DONE========')
+        else:
+            print('========CONTINUE=========')
 
 
 if __name__ == "__main__":
@@ -184,7 +176,7 @@ if __name__ == "__main__":
     print UpmpHandler.get_merchant_info_by_merid(root_path, '880000000002457')
 
     # try:
-    #     UpmpHandler.query_merchant_info('/api/v1/merchanqt', root_path)
+    # UpmpHandler.query_merchant_info('/api/v1/merchanqt', root_path)
     # except InvalidUrlException:
     #     print 'exception'
     #     pass
