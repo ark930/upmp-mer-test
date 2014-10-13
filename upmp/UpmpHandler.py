@@ -175,14 +175,14 @@ class UpmpHandler:
 
             print('========SEND MAIL========')
             from util import mail
-            attchment_path = os.path.join('data', merchant['id'] + '.xlsx')
+            attchment_path = os.path.join('data/2014', merchant['id'] + '.xlsx')
             if os.path.isfile(attchment_path):
                 mailto_list = list()
                 with open('data/maillist') as f:
                     for line in f:
                         mailto_list.append(line.strip())
 
-                if send_mail(mailto_list, merchant, attchment_path):
+                if mail.send_mail(mailto_list, merchant, attchment_path):
                     print "发送成功"
                 else:
                     print "发送失败"

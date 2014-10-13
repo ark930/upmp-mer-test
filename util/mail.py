@@ -19,7 +19,7 @@ def send_mail(to_list, merchant, attchment_path):
     from_name = '钢铁侠'
     me = from_name + "<" + mail_user + "@" + mail_postfix + ">"
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = '银联测试报告：' + merchant['name']  # 设置主题
+    msg['Subject'] = '银联测试报告：' + merchant['name'].decode('utf-8').encode('utf-8')  # 设置主题
     msg['From'] = from_name  # 发件人
     msg['To'] = ";".join(to_list)  # 收件人
 
@@ -32,7 +32,7 @@ def send_mail(to_list, merchant, attchment_path):
         </p>
       </body>
     </html>
-    """ % (merchant['name'], merchant['id'])
+    """ % (merchant['name'].decode('utf-8').encode('utf-8'), merchant['id'].decode('utf-8').encode('utf-8'))
     msg.attach(MIMEText(html, 'html'))
 
     files = [attchment_path]
