@@ -31,6 +31,11 @@ class UpmpHandler:
             # 更新商户数据库
             repo = RepoGit("../data/")
             repo.pull()
+
+            # 商户数据不存在，则抛出异常
+            if not os.path.isfile(os.path.join("data/2014", mer_id + ".txt")):
+                raise InvalidMerchantException
+
             mer_name, mer_key = UpmpHandler.get_merchant_info_by_merid("data/2014/", mer_id)
             db.set_upmp_basic_info(mer_name, mer_id, mer_key)
             merchant = db.get_upmp_data_by_merid(mer_id)
