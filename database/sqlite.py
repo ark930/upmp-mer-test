@@ -8,6 +8,7 @@ class Sqlite:
 
     def __init__(self):
         self.conn = sqlite3.connect(self.table_name, check_same_thread=False)
+        self.conn.text_factory = str
         self.c = self.conn.cursor()
         if not self.is_table_exist():
             self.create_table()
