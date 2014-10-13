@@ -5,6 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email import Encoders
 import os
+import random
 
 from email.MIMEBase import MIMEBase
 
@@ -13,10 +14,12 @@ mail_host = 'smtp.ym.163.com'
 mail_user = "robot"
 mail_pass = "robot4pingpp"
 mail_postfix = "pingplusplus.com"
+heros = ['蜘蛛侠', '钢铁侠', '美国队长', '雷神托尔', '绿巨人']
 
 
 def send_mail(to_list, merchant, attchment_path):
-    from_name = '钢铁侠'
+    from_name = heros[random.randint(0, 4)]
+    print from_name
     me = from_name + "<" + mail_user + "@" + mail_postfix + ">"
     msg = MIMEMultipart('alternative')
     msg['Subject'] = '银联测试报告：' + merchant['name'].decode('utf-8').encode('utf-8')  # 设置主题
