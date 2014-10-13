@@ -43,7 +43,10 @@ class notify:
     def POST(self):
         try:
             data = web.data()
-            UpmpHandler.notify(data)
+            try:
+                UpmpHandler.notify(data)
+            except Exception, e:
+                print e
             web.header('Content-Type', 'text/html')
             raise web.OK('success')
         except InvalidMerchantException:
