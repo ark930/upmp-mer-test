@@ -43,10 +43,7 @@ class notify:
     def POST(self):
         try:
             data = web.data()
-            try:
-                UpmpHandler.notify(data)
-            except Exception, e:
-                print e
+            UpmpHandler.notify(data)
             web.header('Content-Type', 'text/html')
             raise web.OK('success')
         except InvalidMerchantException:
@@ -55,6 +52,9 @@ class notify:
             raise web.BadRequest('Notify fail')
         except InvalidContentTypeException:
             raise web.BadRequest('Invalid content type')
+        except Exception, e:
+            print e
+            raise web.OK('success')
 
 
 class merchant:
