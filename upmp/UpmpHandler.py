@@ -167,12 +167,6 @@ class UpmpHandler:
             merchant = db.get_upmp_data_by_merid(mer_id)
             eh.save('./data/template.xlsx', report_file, merchant)
 
-            print('=========GIT PUSH========')
-            repo = RepoGit(root_path)
-            repo.add(os.path.join('2014', '*'))
-            repo.commit("Merchant " + merchant['id'] + ' test finished')
-            repo.push()
-
             print('========SEND MAIL========')
             from util import mail
             attchment_path = os.path.join('data/2014', merchant['id'] + '.xlsx')
@@ -186,6 +180,12 @@ class UpmpHandler:
                     print "发送成功"
                 else:
                     print "发送失败"
+
+            print('=========GIT PUSH========')
+            repo = RepoGit(root_path)
+            repo.add(os.path.join('2014', '*'))
+            repo.commit("Merchant " + merchant['id'] + ' test finished')
+            repo.push()
 
             print('========TEST DONE========')
         else:
