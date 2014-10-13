@@ -3,49 +3,39 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.MIMEBase import MIMEBase
 from email import Encoders
 import os
 
-mailto_list = ["edwin.wang@pingplusplus.com", "489004717@qq.com"]
+from email.MIMEBase import MIMEBase
+
 
 mail_host = 'smtp.ym.163.com'
 mail_user = "robot"
 mail_pass = "robot4pingpp"
 mail_postfix = "pingplusplus.com"
 
-def send_mail(to_list, sub, content):
-    me = 'robot' + "<" + mail_user + "@" + mail_postfix + ">"
+
+def send_mail(to_list, merchant, attchment_path):
+    from_name = '钢铁侠'
+    me = from_name + "<" + mail_user + "@" + mail_postfix + ">"
     msg = MIMEMultipart('alternative')
-    # msg = MIMEText(content)
-    # msg['Subject'] = sub  # 设置主题
-    msg['From'] = me  # 发件人
+    msg['Subject'] = '银联测试报告：' + merchant['name']  # 设置主题
+    msg['From'] = from_name  # 发件人
     msg['To'] = ";".join(to_list)  # 收件人
 
-    text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
     html = """\
     <html>
       <head></head>
       <body>
-        <p>Hi!<br>
-           How are you?<br>
-           Here is the <a href="http://www.python.org">link</a> you wanted.
+        <p>商户名称：%s<p>
+        <p>  商户号：%s<p>
         </p>
       </body>
     </html>
-    """
+    """ % (merchant['name'], merchant['id'])
+    msg.attach(MIMEText(html, 'html'))
 
-    # Record the MIME types of both parts - text/plain and text/html.
-    part1 = MIMEText(text, 'plain')
-    part2 = MIMEText(html, 'html')
-
-    # Attach parts into message container.
-    # According to RFC 2046, the last part of a multipart message, in this case
-    # the HTML message, is best and preferred.
-    msg.attach(part1)
-    msg.attach(part2)
-
-    files = ['../data/untest_merchant.txt', '../data/template.xlsx']
+    files = [attchment_path]
     for f in files:
         part = MIMEBase('application', "octet-stream")
         part.set_payload(open(f, "rb").read())
@@ -67,7 +57,17 @@ def send_mail(to_list, sub, content):
 
 
 if __name__ == '__main__':
-    if send_mail(mailto_list, "subject", "content"):
+    attchment_path = '../data/template.xlsx'
+    merchant = dict()
+    merchant['name'] = '是的范德萨'
+    merchant['id'] = '423432342323'
+
+    mailto_list = list()
+    with open('../data/maillist') as f:
+        for line in f:
+            mailto_list.append(line.strip())
+
+    if send_mail(mailto_list, merchant, attchment_path):
         print "发送成功"
     else:
         print "发送失败"

@@ -59,7 +59,7 @@ class UpmpHandler:
         res['upmp']['tn'] = res_dict['tn']
         res['upmp']['mode'] = '01'
 
-        if not merchant['charge_res']:
+        if not merchant['charge_notify']:
             print('=========charge========')
             db.set_upmp_charge_data(mer_id, post_data, res_data)
 
@@ -104,7 +104,7 @@ class UpmpHandler:
 
     @staticmethod
     def to_log(notify_data, notify_dict, mer_id, uc):
-        # print notify_dict
+        print notify_dict
         order_no = notify_dict['orderNumber']
         order_time = notify_dict['orderTime']
         settle_amount = notify_dict['settleAmount']
@@ -162,25 +162,31 @@ class UpmpHandler:
         if db.is_upmp_data_complete(mer_id):
             print('=========TO EXCEL========')
             from util.excel_handler import ExcelHandler
-
             eh = ExcelHandler()
             report_file = os.path.join('data/2014', merchant['id'] + '.xlsx')
             merchant = db.get_upmp_data_by_merid(mer_id)
             eh.save('./data/template.xlsx', report_file, merchant)
+
             print('=========GIT PUSH========')
             repo = RepoGit(root_path)
             repo.add(os.path.join('2014', '*'))
             repo.commit("Merchant " + merchant['id'] + ' test finished')
             repo.push()
-            # git_report_file = report_file[len(root_path) + 1:]
-            # git_log_dir = log_dir[len(root_path) + 1:]
-            # gm.add(git_report_file)
-            # gm.add(os.path.join(git_log_dir, '*'))
-            # gm.commit("Merchant " + merchant['id'] + ' test finished')
-            # gm.push()
-            # print('========SEND MAIL========')
-            # from util import mail
-            # mail.send_email()
+
+            print('========SEND MAIL========')
+            from util import mail
+            attchment_path = os.path.join('data', merchant['id'] + '.xlsx')
+            if os.path.isfile(attchment_path):
+                mailto_list = list()
+                with open('data/maillist') as f:
+                    for line in f:
+                        mailto_list.append(line.strip())
+
+                if send_mail(mailto_list, merchant, attchment_path):
+                    print "发送成功"
+                else:
+                    print "发送失败"
+
             print('========TEST DONE========')
         else:
             print('========CONTINUE=========')
